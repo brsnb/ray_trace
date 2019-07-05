@@ -1,11 +1,13 @@
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::util::Vec3f;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub struct HitRecord {
     pub t: f64,
     pub p: Vec3f,
     pub normal: Vec3f,
+    pub material: Material,
 }
 
 impl HitRecord {
@@ -14,6 +16,7 @@ impl HitRecord {
             t: 0.0,
             p: Vec3f::new_unit_vec3f(),
             normal: Vec3f::new_unit_vec3f(),
+            material: Material::new(),
         }
     }
 }

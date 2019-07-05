@@ -1,3 +1,4 @@
+use std::f64;
 use std::fmt;
 use std::ops::{Add, Div, Mul, Sub};
 
@@ -126,6 +127,7 @@ impl Sub for Vec3f {
     }
 }
 
+#[derive(Copy, Clone, Debug)]
 pub struct Color {
     pub r: f64,
     pub b: f64,
@@ -162,6 +164,19 @@ impl Div<f64> for Color {
     }
 }
 
+impl Mul<Color> for Color {
+    type Output = Self;
+
+    fn mul(self, other: Color) -> Self::Output {
+        Self {
+            r: self.r * other.r,
+            g: self.g * other.g,
+            b: self.b * other.b,
+        }
+    }
+}
+
+
 impl Mul<f64> for Color {
     type Output = Self;
 
@@ -185,3 +200,4 @@ impl Sub for Color {
         }
     }
 }
+

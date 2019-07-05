@@ -1,15 +1,21 @@
 use crate::hitable::{HitRecord, Hitable};
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::util::Vec3f;
 
 pub struct Sphere {
     pub center: Vec3f,
     pub radius: f64,
+    pub material: Material,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3f, radius: f64) -> Sphere {
-        Sphere { center, radius }
+    pub fn new(center: Vec3f, radius: f64, material: Material) -> Sphere {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -22,21 +28,24 @@ impl Hitable for Sphere {
         let discriminant = b * b - a * c;
 
         if discriminant > 0.0 {
-            let mut temp = (-b - f64::sqrt(b * b - a * c)) / a;
+            let mut temp = (-b - f64::sqrt(discriminant)) / a;
             if temp < t_max && temp > t_min {
                 record.t = temp;
                 record.p = ray.point_at_parameter(record.t);
                 record.normal = (record.p - self.center) / self.radius;
-                return true;
+                record.material = self.material.clone();
+                return true
             }
-            temp = (-b + f64::sqrt(b * b - a * c)) / a;
+            temp = (-b + f64::sqrt(discriminant)) / a;
             if temp < t_max && temp > t_min {
                 record.t = temp;
                 record.p = ray.point_at_parameter(record.t);
                 record.normal = (record.p - self.center) / self.radius;
-                return true;
+                record.material = self.material.clone();
+                return true
             }
         }
+
         false
     }
 }

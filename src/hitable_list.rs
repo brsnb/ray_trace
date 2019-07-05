@@ -1,10 +1,16 @@
-use crate::hitable::{Hitable, HitRecord};
-use crate::util::Vec3f;
+use crate::hitable::{HitRecord, Hitable};
 use crate::ray::Ray;
 
-#[derive(Default)]
 pub struct HitableList {
     pub list: Vec<Box<dyn Hitable>>,
+}
+
+impl HitableList {
+    pub fn new() -> HitableList {
+        HitableList {
+            list: Vec::new(),
+        }
+    }
 }
 
 impl Hitable for HitableList {
@@ -16,11 +22,10 @@ impl Hitable for HitableList {
         for i in 0..self.list.len() {
             if self.list[i].hit(ray, t_min, closest, &mut temp_record) {
                 hit_anything = true;
-                closest = temp_record.t.clone();
-                *record = temp_record;
+                closest = temp_record.t;
+                *record = temp_record.clone();
             }
         }
         hit_anything
     }
 }
-
