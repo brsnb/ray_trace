@@ -10,7 +10,7 @@ use ray_trace::util::{Color, Vec3f};
 
 use rand::prelude::*;
 
-pub fn color(ray: &Ray, world: &impl Hitable, depth: u32) -> Color {
+fn color(ray: &Ray, world: &impl Hitable, depth: u32) -> Color {
     let mut record = HitRecord::new();
     if world.hit(ray, 0.001, f64::MAX, &mut record) {
         let mut scattered = Ray::new(&Vec3f::new_unit_vec3f(), &Vec3f::new_unit_vec3f());
@@ -30,41 +30,103 @@ pub fn color(ray: &Ray, world: &impl Hitable, depth: u32) -> Color {
     }
 }
 
-pub fn gen_ppm() {
-    let nx = 200;
-    let ny = 100;
+fn random_scene() -> HitableList {
+    let mut scene = HitableList::new();
+
+    scene.list.push(Box::new(Sphere::new(
+        Vec3f::new(0.0, -1000.0, 0.0),
+        1000.0,
+        Material::Diffuse(Color::new(0.5, 0.5, 0.5)),
+    )));
+
+    let mut rng = thread_rng();
+    let check_size = Vec3f::new(4.0, 0.2, 0.0);
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_material = rng.gen::<f64>();
+            let center = Vec3f::new(
+                f64::from(a) + 0.9 * rng.gen::<f64>(),
+                0.2,
+                f64::from(b) + 0.9 * rng.gen::<f64>(),
+            );
+            if (center - check_size).length() > 0.9 {
+                if choose_material < 0.33 {
+                    scene.list.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Material::Diffuse(Color::new(
+                            rng.gen::<f64>() * rng.gen::<f64>(),
+                            rng.gen::<f64>() * rng.gen::<f64>(),
+                            rng.gen::<f64>() * rng.gen::<f64>(),
+                        )),
+                    )));
+                } else if choose_material < 0.66 {
+                    scene.list.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Material::Metal(
+                            Color::new(
+                                0.5 * (1.0 + rng.gen::<f64>()),
+                                0.5 * (1.0 + rng.gen::<f64>()),
+                                0.5 * (1.0 + rng.gen::<f64>()),
+                            ),
+                            0.5 * rng.gen::<f64>(),
+                        ),
+                    )));
+                } else {
+                    scene.list.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Material::Dielectric(1.5),
+                    )));
+                }
+            }
+        }
+    }
+
+    scene.list.push(Box::new(Sphere::new(
+        Vec3f::new(0.0, 1.0, 0.0),
+        1.0,
+        Material::Dielectric(1.5),
+    )));
+
+    scene.list.push(Box::new(Sphere::new(
+        Vec3f::new(-4.0, 1.0, 0.0),
+        1.0,
+        Material::Diffuse(Color::new(0.4, 0.2, 0.1)),
+    )));
+
+    scene.list.push(Box::new(Sphere::new(
+        Vec3f::new(4.0, 1.0, 0.0),
+        1.0,
+        Material::Metal(Color::new(0.7, 0.5, 0.5), 0.0),
+    )));
+
+    scene
+}
+
+fn gen_ppm() {
+    let nx = 1200;
+    let ny = 800;
     let ns = 100;
 
     println!("P3\n{} {}\n255", nx, ny);
 
-    let mut world = HitableList::new();
-    world.list.push(Box::new(Sphere::new(
-        Vec3f::new(0.0, 0.0, -1.0),
-        0.5,
-        Material::Diffuse(Color::new(0.1, 0.2, 0.5)),
-    )));
-    world.list.push(Box::new(Sphere::new(
-        Vec3f::new(0.0, -100.5, -1.0),
-        100.0,
-        Material::Diffuse(Color::new(0.8, 0.8, 0.0)),
-    )));
-    world.list.push(Box::new(Sphere::new(
-        Vec3f::new(1.0, 0.0, -1.0),
-        0.5,
-        Material::Metal(Color::new(0.8, 0.6, 0.2), 0.0),
-    )));
-    world.list.push(Box::new(Sphere::new(
-        Vec3f::new(-1.0, 0.0, -1.0),
-        0.5,
-        Material::Dielectric(1.5),
-    )));
+    let world = random_scene();
+    let look_from = Vec3f::new(10.0, 2.0, 3.0);
+    let look_at = Vec3f::new(0.0, 0.0, 0.0);
+    let dof = 10.0;
+    let aperture = 0.1;
 
     let camera = Camera::new(
-        &Vec3f::new(-2.0, 2.0, 1.0),
-        &Vec3f::new(0.0, 0.0, -1.0),
+        &look_from,
+        &look_at,
         &Vec3f::new(0.0, 1.0, 0.0),
-        75.0,
+        35.0,
         nx as f64 / ny as f64,
+        aperture,
+        dof,
     );
 
     for j in (0..=(ny - 1)).rev() {

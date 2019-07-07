@@ -1,6 +1,6 @@
 use crate::hitable::HitRecord;
 use crate::ray::Ray;
-use crate::util::{Color, Vec3f};
+use crate::util::{random_in_unit_sphere, Color, Vec3f};
 
 use rand::prelude::*;
 
@@ -141,12 +141,3 @@ fn schlick(cosine: f64, refractive_index: &RefractiveIndex) -> f64 {
     r0 + (1.0 - r0) * f64::powi(1.0 - cosine, 5)
 }
 
-fn random_in_unit_sphere() -> Vec3f {
-    let mut rng = thread_rng();
-    loop {
-        let p = (Vec3f::new(rng.gen(), rng.gen(), rng.gen()) - Vec3f::new(1.0, 1.0, 1.0)) * 2.0;
-        if p.squared_length() < 1.0 {
-            return p;
-        }
-    }
-}

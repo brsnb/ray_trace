@@ -2,6 +2,8 @@ use std::f64;
 use std::fmt;
 use std::ops::{Add, Div, Mul, Sub};
 
+use rand::prelude::*;
+
 //TODO: Implement iter maybe
 #[derive(Copy, Clone, Debug)]
 pub struct Vec3f {
@@ -196,6 +198,16 @@ impl Sub for Color {
             r: self.r - other.r,
             g: self.g - other.g,
             b: self.b - other.b,
+        }
+    }
+}
+
+pub fn random_in_unit_sphere() -> Vec3f {
+    let mut rng = thread_rng();
+    loop {
+        let p = (Vec3f::new(rng.gen(), rng.gen(), rng.gen()) - Vec3f::new(1.0, 1.0, 1.0)) * 2.0;
+        if p.squared_length() < 1.0 {
+            return p;
         }
     }
 }
