@@ -10,19 +10,19 @@ use ray_trace::util::{Color, Vec3f};
 
 use rand::prelude::*;
 
-pub fn color(ray: &Ray, world: &mut impl Hitable, depth: u32) -> Color {
+pub fn color(ray: &Ray, world: &impl Hitable, depth: u32) -> Color {
     let mut record = HitRecord::new();
     if world.hit(ray, 0.001, f64::MAX, &mut record) {
         let mut scattered = Ray::new(&Vec3f::new_unit_vec3f(), &Vec3f::new_unit_vec3f());
         let mut attenuation = Color::new(0.0, 0.0, 0.0);
-        if depth < 5
+        if depth < 50
             && record
                 .material
                 .scatter(ray, &record, &mut attenuation, &mut scattered)
         {
-            return attenuation * color(&scattered, world, depth + 1)
+            return attenuation * color(&scattered, world, depth + 1);
         } else {
-            return Color::new(0.0, 0.0, 0.0)
+            return Color::new(0.0, 0.0, 0.0);
         }
     } else {
         let t = (ray.direction().as_unit().y + 1.0) * 0.5;
@@ -41,7 +41,7 @@ pub fn gen_ppm() {
     world.list.push(Box::new(Sphere::new(
         Vec3f::new(0.0, 0.0, -1.0),
         0.5,
-        Material::Diffuse(Color::new(0.8, 0.3, 0.3)),
+        Material::Diffuse(Color::new(0.1, 0.2, 0.5)),
     )));
     world.list.push(Box::new(Sphere::new(
         Vec3f::new(0.0, -100.5, -1.0),
@@ -51,14 +51,21 @@ pub fn gen_ppm() {
     world.list.push(Box::new(Sphere::new(
         Vec3f::new(1.0, 0.0, -1.0),
         0.5,
-        Material::Metal(Color::new(0.8, 0.6, 0.2)),
+        Material::Metal(Color::new(0.8, 0.6, 0.2), 0.0),
     )));
     world.list.push(Box::new(Sphere::new(
         Vec3f::new(-1.0, 0.0, -1.0),
         0.5,
-        Material::Metal(Color::new(0.8, 0.8, 0.8)),
+        Material::Dielectric(1.5),
     )));
-    let camera = Camera::new();
+
+    let camera = Camera::new(
+        &Vec3f::new(-2.0, 2.0, 1.0),
+        &Vec3f::new(0.0, 0.0, -1.0),
+        &Vec3f::new(0.0, 1.0, 0.0),
+        75.0,
+        nx as f64 / ny as f64,
+    );
 
     for j in (0..=(ny - 1)).rev() {
         for i in 0..nx {
@@ -70,7 +77,7 @@ pub fn gen_ppm() {
                 let u = (u_rand + i as f64) / nx as f64;
                 let v = (v_rand + j as f64) / ny as f64;
                 let ray = camera.get_ray(u, v);
-                col = col + color(&ray, &mut world, 0);
+                col = col + color(&ray, &world, 0);
             }
 
             col = col / ns as f64;

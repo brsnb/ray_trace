@@ -1,3 +1,5 @@
+use std::f64::consts::PI;
+
 use crate::ray::Ray;
 use crate::util::Vec3f;
 
@@ -9,11 +11,19 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new() -> Camera {
-        let lower_left_corner = Vec3f::new(-2.0, -1.0, -1.0);
-        let horizontal = Vec3f::new(4.0, 0.0, 0.0);
-        let vertical = Vec3f::new(0.0, 2.0, 0.0);
-        let origin = Vec3f::new(0.0, 0.0, 0.0);
+    pub fn new(look_from: &Vec3f, look_at: &Vec3f, vup: &Vec3f, vfov: f64, aspect_ratio: f64) -> Camera {
+        let theta = vfov * PI / 180.0;
+        let half_height = f64::tan(theta / 2.0);
+        let half_width = aspect_ratio * half_height;
+        let origin = *look_from;
+
+        let w = (*look_from - *look_at).as_unit();
+        let u = vup.cross(&w).as_unit();
+        let v = w.cross(&u);
+
+        let lower_left_corner = origin - u * half_width - v * half_height - w;
+        let horizontal = u * 2.0 * half_width;
+        let vertical = v * 2.0 * half_height;
 
         Camera {
             origin,

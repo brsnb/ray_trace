@@ -7,9 +7,7 @@ pub struct HitableList {
 
 impl HitableList {
     pub fn new() -> HitableList {
-        HitableList {
-            list: Vec::new(),
-        }
+        HitableList { list: Vec::new() }
     }
 }
 

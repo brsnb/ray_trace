@@ -176,7 +176,6 @@ impl Mul<Color> for Color {
     }
 }
 
-
 impl Mul<f64> for Color {
     type Output = Self;
 
@@ -200,4 +199,3 @@ impl Sub for Color {
         }
     }
 }
-

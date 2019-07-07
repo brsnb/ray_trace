@@ -34,7 +34,7 @@ impl Hitable for Sphere {
                 record.p = ray.point_at_parameter(record.t);
                 record.normal = (record.p - self.center) / self.radius;
                 record.material = self.material.clone();
-                return true
+                return true;
             }
             temp = (-b + f64::sqrt(discriminant)) / a;
             if temp < t_max && temp > t_min {
@@ -42,7 +42,7 @@ impl Hitable for Sphere {
                 record.p = ray.point_at_parameter(record.t);
                 record.normal = (record.p - self.center) / self.radius;
                 record.material = self.material.clone();
-                return true
+                return true;
             }
         }
 
